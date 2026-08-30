@@ -14,7 +14,119 @@
 
 ---
 
-## ✨ Features
+## 🏛️ System Architecture
+
+```mermaid
+graph TD
+    Client["💻 React 18 + Vite + Tailwind CSS<br/>(Single-Page App + Autocomplete + Live Radar Modal)"]
+    API["⚙️ Spring Boot 3.x REST API<br/>(Security + JWT + WebSockets STOMP)"]
+    RailRadar["📡 RailRadar Live API<br/>(api.railradar.in/v1)"]
+    Lock["🔒 Pessimistic Write Lock<br/>(SeatInventory Concurrency Guard)"]
+    DB[("💾 H2 (Dev) / Oracle SQL (Prod) Database<br/>(Inventory, Bookings, Users, Runs)")]
+    ExpJob["⏰ 60s Hold Expiry Scheduled Worker"]
+    QR["🔲 ZXing QR Code Generator<br/>(Base64 PNG Data URI)"]
+
+    Client -->|REST & WebSockets| API
+    API -->|Live Radar Sync| RailRadar
+    API -->|Acquire Lock| Lock
+    Lock --> DB
+    ExpJob -->|Release Unpaid Holds| Lock
+    API -->|Generate QR Code| QR
+    QR --> Client
+```
+
+---
+
+## 📂 Project File Structure
+
+```
+Railway-Reservation-System/
+│
+├── src/main/java/com/railway/
+│   ├── config/               # Security, JWT filters, CORS, WebSockets
+│   │   ├── CorsConfig.java
+│   │   ├── JwtAuthFilter.java
+│   │   ├── JwtService.java
+│   │   ├── SecurityConfig.java
+│   │   └── WebSocketConfig.java
+│   │
+│   ├── controller/           # REST API endpoints
+│   │   ├── AdminController.java
+│   │   ├── AuthController.java
+│   │   ├── BookingController.java
+│   │   ├── PaymentController.java
+│   │   ├── StationController.java
+│   │   └── TrainController.java
+│   │
+│   ├── dto/                  # Request & Response Data Transfer Objects
+│   │   ├── admin/
+│   │   ├── auth/
+│   │   ├── booking/
+│   │   ├── payment/
+│   │   ├── railradar/        # RailRadar live status & schedule DTOs
+│   │   ├── station/
+│   │   └── train/
+│   │
+│   ├── model/                # JPA Database Entities & Enums
+│   │   ├── Booking.java
+│   │   ├── Passenger.java
+│   │   ├── Payment.java
+│   │   ├── SeatInventory.java   # Concurrency locked table
+│   │   ├── Station.java
+│   │   ├── Train.java
+│   │   └── User.java
+│   │
+│   ├── repository/           # Spring Data JPA Repositories
+│   │   ├── BookingRepository.java
+│   │   ├── SeatInventoryRepository.java  # @Lock(PESSIMISTIC_WRITE)
+│   │   ├── StationRepository.java
+│   │   └── TrainRepository.java
+│   │
+│   ├── seed/                 # Auto-seeding for nationwide fleet & test users
+│   │   └── DataSeeder.java
+│   │
+│   ├── service/              # Core business logic
+│   │   ├── AuthService.java
+│   │   ├── BookingExpiryService.java   # 60s hold cleanup worker
+│   │   ├── BookingService.java         # Waitlist waterfall cascade
+│   │   ├── FareCalculator.java
+│   │   ├── PaymentService.java
+│   │   ├── QrCodeService.java          # ZXing base64 ticket generator
+│   │   ├── RailRadarService.java       # Real-time GPS & timetable sync
+│   │   └── TrainSearchService.java
+│   │
+│   └── RailwayApplication.java
+│
+├── frontend/                 # React 18 + Vite + Tailwind CSS Single-Page App
+│   ├── src/
+│   │   ├── api/client.js            # Axios client with auth interceptors
+│   │   ├── components/              # UI components
+│   │   │   ├── ConfirmDialog.jsx
+│   │   │   ├── LiveTrackingModal.jsx # RailRadar live tracking popup
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── StationAutocomplete.jsx
+│   │   │   ├── TicketCard.jsx        # Boarding pass with QR display
+│   │   │   └── TrainCard.jsx
+│   │   ├── context/AuthContext.jsx   # Global user auth state
+│   │   ├── pages/                   # Application views
+│   │   │   ├── AdminDashboardPage.jsx
+│   │   │   ├── BookingDetailPage.jsx
+│   │   │   ├── BookingPage.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── MyBookingsPage.jsx
+│   │   │   ├── PaymentPage.jsx
+│   │   │   └── SearchPage.jsx
+│   │   └── App.jsx
+│   ├── tailwind.config.js
+│   └── vite.config.js
+│
+├── pom.xml                   # Maven dependencies & build configuration
+└── README.md
+```
+
+---
+
+## ✨ Key Features
 
 - 🛰️ **Live RailRadar GPS Tracking:** Real-time running delay, next halts, platform numbers, and coach composition (`ENG-SL1-3A1-2A1...`).
 - 🔒 **Concurrency-Proof Seat Engine:** Database-level `PESSIMISTIC_WRITE` locks prevent double bookings during high-traffic surges.
@@ -82,7 +194,7 @@ Both test accounts are pre-seeded and accessible via **1-Click Login buttons** o
 
 ---
 
-## 🧪 Testing
+## 🧪 Automated Testing
 
 ```powershell
 # API Lifecycle Integration Test (15/15 checks)
