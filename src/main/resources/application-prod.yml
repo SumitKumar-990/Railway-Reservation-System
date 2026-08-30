@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@//localhost:1521/RAILWAYDB
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: railway_user
+    password: ${DB_PASSWORD}
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: validate
+
+app:
+  seed-data: false
