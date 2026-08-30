@@ -11,12 +11,12 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:a-very-long-secret-key-for-jwt-signing-minimum-256-bits-long-change-in-production}
+    secret: a-very-long-secret-key-for-jwt-signing-minimum-256-bits-long-change-in-production
     expiration-ms: 86400000
   booking:
     hold-minutes: 15
   railradar:
-    api-key: ${RAILRADAR_API_KEY:}
+    api-key: rg_1b3cfb97ce074697be75e92156bb6445
     base-url: https://api.railradar.in/v1
 
 server:

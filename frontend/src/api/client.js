@@ -92,4 +92,19 @@ export const confirmPayment = async (data) => {
   return response.data;
 };
 
+export const getAdminTrains = async () => {
+  const response = await client.get('/api/admin/trains');
+  return response.data;
+};
+
+export const getAdminTrainOccupancy = async (trainRunId) => {
+  const response = await client.get(`/api/admin/train-runs/${trainRunId}/occupancy`);
+  return response.data;
+};
+
+export const cancelAdminTrainRun = async (trainRunId) => {
+  const response = await client.post(`/api/admin/train-runs/${trainRunId}/cancel`);
+  return response.data;
+};
+
 export default client;

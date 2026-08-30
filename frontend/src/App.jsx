@@ -8,6 +8,7 @@ import BookingPage from './pages/BookingPage';
 import PaymentPage from './pages/PaymentPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import BookingDetailPage from './pages/BookingDetailPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useAuth } from './context/AuthContext';
 
@@ -19,9 +20,19 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const AdminRoute = ({ children }) => {
+  const { user, isAuthenticated, loading } = useAuth();
+  
+  if (loading) return null;
+  if (!isAuthenticated || user?.role !== 'ADMIN') {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+
 const App = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-surface-50">
       <Navbar />
       <main className="flex-grow">
         <Routes>
@@ -58,6 +69,14 @@ const App = () => {
               <ProtectedRoute>
                 <BookingDetailPage />
               </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <AdminDashboardPage />
+              </AdminRoute>
             } 
           />
           <Route path="*" element={<NotFoundPage />} />

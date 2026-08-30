@@ -59,22 +59,35 @@ const LoginPage = () => {
         {/* Quick Demo Credentials Panel */}
         <div className="bg-gradient-to-br from-gray-900 to-[#1a1a2e] text-white p-5 rounded-2xl shadow-md border border-gray-800">
           <div className="flex items-center gap-2 mb-3 text-xs font-bold uppercase tracking-wider text-accent-400">
-            <KeyRound className="h-4 w-4" /> Ready-to-use Demo Account
+            <KeyRound className="h-4 w-4" /> Ready-to-use Test Accounts
           </div>
-          <button
-            type="button"
-            onClick={() => handleQuickLogin('user@railway.com', 'user1234')}
-            className="w-full p-3.5 bg-white/10 hover:bg-white/15 rounded-xl border border-white/10 text-left transition flex items-center justify-between"
-          >
-            <div>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('user@railway.com', 'user1234')}
+              className="p-3 bg-white/10 hover:bg-white/15 rounded-xl border border-white/10 text-left transition flex flex-col justify-between"
+            >
               <div className="flex items-center gap-1.5 font-semibold text-xs text-emerald-400 mb-1">
-                <UserCheck className="h-3.5 w-3.5" /> Demo Customer Account
+                <UserCheck className="h-3.5 w-3.5" /> Customer Account
               </div>
-              <p className="text-xs font-mono text-gray-300">user@railway.com</p>
-              <p className="text-[11px] text-gray-400">Password: user1234</p>
-            </div>
-            <span className="text-xs font-bold text-accent-400 px-3 py-1.5 bg-accent-500/20 rounded-lg border border-accent-500/30">1-Click Sign In →</span>
-          </button>
+              <p className="text-[11px] font-mono text-gray-300 truncate">user@railway.com</p>
+              <p className="text-[10px] text-gray-400">Pass: user1234</p>
+              <span className="text-[10px] font-bold text-accent-400 mt-2 block">1-Click Sign In →</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('admin@railway.com', 'admin123')}
+              className="p-3 bg-white/10 hover:bg-white/15 rounded-xl border border-white/10 text-left transition flex flex-col justify-between"
+            >
+              <div className="flex items-center gap-1.5 font-semibold text-xs text-amber-400 mb-1">
+                <ShieldCheck className="h-3.5 w-3.5" /> Admin Account
+              </div>
+              <p className="text-[11px] font-mono text-gray-300 truncate">admin@railway.com</p>
+              <p className="text-[10px] text-gray-400">Pass: admin123</p>
+              <span className="text-[10px] font-bold text-accent-400 mt-2 block">1-Click Sign In →</span>
+            </button>
+          </div>
         </div>
 
         <div className="bg-white py-8 px-4 shadow-sm sm:rounded-2xl border border-gray-200 sm:px-10">
