@@ -43,8 +43,7 @@ public class DataSeeder implements CommandLineRunner {
         SeatClass cc = saveClass("CC", "AC Chair Car");
         SeatClass ec = saveClass("EC", "Executive Chair");
 
-        // 2. Users (Admin + Customer)
-        saveUser("admin@railway.com", "admin123", "Admin", "User", Role.ADMIN);
+        // 2. Demo User Account
         saveUser("user@railway.com", "user1234", "Demo", "Customer", Role.CUSTOMER);
 
         // 3. 25+ Major Indian Stations across all railway zones

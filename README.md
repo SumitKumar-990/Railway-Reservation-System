@@ -8,20 +8,21 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-3.4-38B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 
-> **Created by Sumit Kumar** — A full-stack, enterprise-grade Railway Reservation System built from scratch with Spring Boot 3.x, React, Tailwind CSS, and live **RailRadar API** synchronization.
+> **Created by Sumit Kumar** — A full-stack, enterprise-grade Railway Reservation System built from scratch with Spring Boot 3.x, React 18, Tailwind CSS, and real-time live train tracking capabilities.
 
 ---
 
 ## 📋 Table of Contents
 
 - [🌟 Features & Capabilities](#-features--capabilities)
+- [📁 Project Structure](#-project-structure)
 - [🏗️ System Architecture](#️-system-architecture)
 - [🗄️ Database Schema & ERD](#️-database-schema--erd)
 - [⚙️ Tech Stack & Technologies](#️-tech-stack--technologies)
 - [🧠 Core Business Logic & Concurrency](#-core-business-logic--concurrency)
-- [📡 Live RailRadar API Integration](#-live-railradar-api-integration)
+- [📡 Live Train Tracking & Sync](#-live-train-tracking--sync)
 - [🚆 Pre-Seeded Train Fleet](#-pre-seeded-train-fleet)
-- [🔑 Demo Accounts](#-demo-accounts)
+- [🔑 Demo Account](#-demo-account)
 - [📖 Complete REST API Reference](#-complete-rest-api-reference)
 - [🚀 How to Run & Prerequisites](#-how-to-run--prerequisites)
 - [🧪 Running Automated Tests](#-running-automated-tests)
@@ -31,15 +32,84 @@
 
 ## 🌟 Features & Capabilities
 
-- ⚡ **Real-Time RailRadar GPS Tracking:** Fetches live running delays, expected arrival timings, platform numbers, and live coach compositions (`ENG-SL1-SL2-3A1-3A2-2A1-1A1-EOG`).
-- 🔄 **Dynamic Live Train Ingestion:** On-demand synchronization with Indian Railways via RailRadar to import routes, halts, and running days dynamically for any station in India.
-- 🔒 **Concurrency-Proof Seat Booking:** Uses database-level `PESSIMISTIC_WRITE` locks on `SeatInventory` to prevent race conditions or overselling during high traffic booking bursts.
-- 🎟️ **Deterministic Seat Allocation:** Immediate classification into `CONFIRMED`, `RAC` (Reservation Against Cancellation), or `WAITLISTED` with dynamic waitlist queue positions.
+- ⚡ **Live Train GPS Tracking:** Displays real-time delays, expected arrival timings, platform numbers, route halt timelines, and coach compositions.
+- 🔄 **Dynamic Route Discovery:** On-demand route and timetable lookup across major railway stations throughout India.
+- 🔒 **Concurrency-Proof Seat Booking:** Uses database-level `PESSIMISTIC_WRITE` locks on `SeatInventory` to eliminate race conditions and overselling during booking bursts.
+- 🎟️ **Deterministic Seat Allocation:** Immediate classification into `CONFIRMED`, `RAC` (Reservation Against Cancellation), or `WAITLISTED` with dynamic waitlist position tracking.
 - 🌊 **Automatic Waitlist Cascade:** Instant waterfall seat promotion when a booking is cancelled (`RAC` $\rightarrow$ `CONFIRMED`, `WAITLISTED` $\rightarrow$ `RAC` / `CONFIRMED`).
 - ⏱️ **15-Minute Unpaid Hold Expiry:** Scheduled background worker automatically releases unconfirmed/unpaid holds and triggers waitlist cascades.
 - 📱 **Digital Boarding Pass with QR Codes:** ZXing-powered scannable Base64 QR codes embedded directly onto boardable e-tickets.
 - 🔍 **Fuzzy Station Search & Autocomplete:** Search by station codes (`NDLS`), station names (`New Delhi`), or cities (`Delhi`) with keyboard navigation and popular 1-click route chips.
-- 🛡️ **JWT Authentication & Role-Based Access Control:** Secure password hashing with BCrypt and stateless JWT sessions for `CUSTOMER` and `ADMIN` roles.
+- 🛡️ **JWT Stateless Authentication:** Secure password hashing with BCrypt and stateless JWT sessions.
+
+---
+
+## 📁 Project Structure
+
+```
+d:\Project-College\
+├── pom.xml
+└── src/
+    └── main/
+        ├── java/com/railway/
+        │   ├── RailwayApplication.java
+        │   ├── config/
+        │   │   ├── SecurityConfig.java          # Spring Security + JWT filter chain
+        │   │   ├── JwtAuthFilter.java
+        │   │   ├── JwtService.java
+        │   │   ├── WebSocketConfig.java          # STOMP/SockJS
+        │   │   └── CorsConfig.java
+        │   ├── model/                            # JPA entities
+        │   │   ├── User.java
+        │   │   ├── Role.java                     # enum
+        │   │   ├── Station.java
+        │   │   ├── SeatClass.java
+        │   │   ├── Train.java
+        │   │   ├── DayOfWeekSet.java             # converter for running-days
+        │   │   ├── TrainStop.java
+        │   │   ├── TrainClassConfig.java
+        │   │   ├── TrainRun.java
+        │   │   ├── TrainRunStatus.java           # enum
+        │   │   ├── SeatInventory.java            # concurrency-critical
+        │   │   ├── Booking.java
+        │   │   ├── BookingStatus.java            # enum
+        │   │   ├── Passenger.java
+        │   │   ├── BerthPreference.java          # enum
+        │   │   ├── Payment.java
+        │   │   └── PaymentStatus.java            # enum
+        │   ├── repository/                       # Spring Data JPA repos
+        │   ├── service/
+        │   │   ├── AuthService.java
+        │   │   ├── TrainSearchService.java
+        │   │   ├── BookingService.java           # the core — booking + cancellation + cascade
+        │   │   ├── FareCalculator.java
+        │   │   ├── PaymentService.java
+        │   │   ├── BookingExpiryService.java     # @Scheduled job
+        │   │   ├── QrCodeService.java
+        │   │   ├── TrackingService.java          # WebSocket broadcaster
+        │   │   └── AdminService.java
+        │   ├── controller/
+        │   │   ├── AuthController.java
+        │   │   ├── TrainController.java
+        │   │   ├── BookingController.java
+        │   │   ├── PaymentController.java
+        │   │   └── AdminController.java
+        │   ├── dto/                              # request/response DTOs
+        │   │   ├── auth/
+        │   │   ├── train/
+        │   │   ├── booking/
+        │   │   ├── payment/
+        │   │   └── admin/
+        │   ├── exception/
+        │   │   ├── GlobalExceptionHandler.java   # @ControllerAdvice
+        │   │   └── ...                           # domain exceptions
+        │   └── seed/
+        │       └── DataSeeder.java               # @Profile("dev") CommandLineRunner
+        └── resources/
+            ├── application.yml                   # common config
+            ├── application-dev.yml               # H2 console, seeding, CORS
+            └── application-prod.yml              # Oracle placeholder
+```
 
 ---
 
@@ -47,16 +117,16 @@
 
 ```mermaid
 graph TD
-    Client["💻 React 18 + Vite + Tailwind CSS<br/>(Single-Page App + Autocomplete + Live Radar Modal)"]
+    Client["💻 React 18 + Vite + Tailwind CSS<br/>(Single-Page App + Autocomplete + Live Tracking Modal)"]
     API["⚙️ Spring Boot 3.x REST API<br/>(Security + JWT + WebSockets STOMP)"]
-    RailRadar["📡 RailRadar Live API<br/>(api.railradar.in/v1)"]
+    LiveSync["📡 Live Train Sync / Radar Service"]
     Lock["🔒 Pessimistic Write Lock<br/>(SeatInventory)"]
     DB[("💾 H2 (Dev) / Oracle SQL (Prod) Database<br/>(Inventory, Bookings, Users, Runs)")]
     ExpJob["⏰ 60s Hold Expiry Scheduled Worker"]
     QR["🔲 ZXing QR Code Generator<br/>(Base64 PNG Data URI)"]
 
     Client -->|REST & WebSockets| API
-    API -->|API Key: rg_1b3cfb...| RailRadar
+    API -->|Live Sync| LiveSync
     API -->|Acquire Lock| Lock
     Lock --> DB
     ExpJob -->|Release Unpaid Holds| Lock
@@ -119,7 +189,7 @@ erDiagram
         int sequence_number "1, 2, 3..."
         time arrival_time
         time departure_time
-        int day_offset "Day index (0, 1, 2)"
+        int day_offset "Day offset (0, 1, 2)"
         int distance_from_origin_km
     }
 
@@ -195,11 +265,11 @@ erDiagram
 ### Backend
 | Technology | Version | Purpose |
 |---|---|---|
-| **Java** | 17+ / 25 | Core backend runtime |
+| **Java** | 17+ / 25 | Core backend language |
 | **Spring Boot** | 3.3.4 | Application framework & dependency injection |
-| **Spring Security** | 6.x | Security framework with JWT stateless filters & BCrypt |
+| **Spring Security** | 6.x | Security framework with JWT stateless filter & BCrypt |
 | **Spring Data JPA** | 3.x | ORM & data persistence layer with Hibernate |
-| **Spring WebSocket** | 3.x | Real-time STOMP message broker for live train streaming |
+| **Spring WebSocket** | 3.x | Real-time STOMP message broker for live train updates |
 | **H2 Database** | Runtime | In-memory relational database for local development |
 | **Oracle JDBC** | Runtime | Production profile (`application-prod.yml`) database support |
 | **Google ZXing** | 3.5.3 | Scannable QR Code generation for confirmed boarding tickets |
@@ -209,12 +279,12 @@ erDiagram
 ### Frontend
 | Technology | Version | Purpose |
 |---|---|---|
-| **React** | 18.3 | UI Component library |
-| **Vite** | 5.4 | Next-generation frontend build tool and dev server |
+| **React** | 18.3 | Frontend UI library |
+| **Vite** | 5.4 | Next-generation build tool and dev server |
 | **Tailwind CSS** | 3.4 | Utility-first responsive CSS styling |
 | **Lucide React** | 0.441 | Modern UI iconography |
 | **Axios** | 1.7 | HTTP client with authentication interceptors |
-| **React Router DOM** | 6.26 | Client-side routing and protected routes |
+| **React Router DOM** | 6.26 | Single-page application routing |
 
 ---
 
@@ -251,20 +321,11 @@ A `@Scheduled(fixedRate = 60000)` background worker queries bookings where `paid
 
 ---
 
-## 📡 Live RailRadar API Integration
+## 📡 Live Train Tracking & Sync
 
-The system integrates directly with the **RailRadar API**:
-- **Base URL:** `https://api.railradar.in/v1`
-- **Live Status Endpoint:** `/trains/{number}/live`
-- **Train Route Details:** `/trains/{number}`
-- **Station Train Schedule:** `/stations/{code}/trains`
-
-### Capabilities:
-- Live delay tracking in minutes (`Running on time` / `Delayed by X mins`).
-- Next halt station, expected arrival time, and platform number.
-- Real-time coach composition diagram (`ENG-SL1-SL2-3A1-3A2-2A1-1A1-EOG`).
-- Route halts timeline with scheduled vs. actual arrival/departure times.
-- Resilient fallback engine with WebSocket broadcast over `/topic/train-run/{id}`.
+Live tracking data can be provided via environment variables:
+- `RAILRADAR_API_KEY`: *(Optional)* API key for live Indian Railways GPS synchronization.
+- **Graceful Fallback:** If no API key is supplied, the built-in tracking simulation engine provides timetable tracking, halts, and coach layout data seamlessly.
 
 ---
 
@@ -283,14 +344,13 @@ The system integrates directly with the **RailRadar API**:
 
 ---
 
-## 🔑 Demo Accounts
+## 🔑 Demo Account
 
-The database comes pre-seeded with test accounts accessible via **1-Click Quick Login** buttons on the login page:
+The database comes pre-seeded with a demo customer account accessible via the **1-Click Quick Login** button on the login page:
 
-| Role | Email | Password | Access Level |
-|---|---|---|---|
-| **Admin** | `admin@railway.com` | `admin123` | Access admin dashboard, view train fleet occupancies, cancel runs |
-| **Customer** | `user@railway.com` | `user1234` | Search trains, book seats, mock payments, track live running status, download QR tickets |
+| Email | Password | Access Level |
+|---|---|---|
+| `user@railway.com` | `user1234` | Search trains, book seats, test mock payments, view live running status, download QR tickets, cancel bookings |
 
 ---
 
@@ -308,7 +368,7 @@ The database comes pre-seeded with test accounts accessible via **1-Click Quick 
 | `GET` | `/api/stations` | List all railway stations | No |
 | `GET` | `/api/stations/search?q={query}` | Search stations by code, name, or city | No |
 | `GET` | `/api/trains/search?from={from}&to={to}&date={YYYY-MM-DD}` | Search available trains with live seat availability | No |
-| `GET` | `/api/trains/{trainNumber}/live` | Real-time RailRadar running status & delay | No |
+| `GET` | `/api/trains/{trainNumber}/live` | Real-time train running status & delay | No |
 | `GET` | `/api/trains/{trainNumber}/details` | Train halts, schedule, and route metadata | No |
 
 ### Bookings (`/api/bookings`)
@@ -324,13 +384,6 @@ The database comes pre-seeded with test accounts accessible via **1-Click Quick 
 |---|---|---|---|
 | `POST` | `/api/payments/initiate` | Initiate payment for a pending PNR | `CUSTOMER` / `ADMIN` |
 | `POST` | `/api/payments/webhook` | Process payment gateway confirmation | No |
-
-### Admin Endpoints (`/api/admin`)
-| Method | Endpoint | Description | Auth Required |
-|---|---|---|---|
-| `GET` | `/api/admin/trains` | List complete train fleet | `ROLE_ADMIN` |
-| `GET` | `/api/admin/train-runs/{id}/occupancy` | Detailed coach and class occupancy breakdown | `ROLE_ADMIN` |
-| `POST` | `/api/admin/train-runs/{id}/cancel` | Cancel train run and issue refunds | `ROLE_ADMIN` |
 
 ---
 
@@ -380,9 +433,6 @@ powershell -ExecutionPolicy Bypass -File scratch/api_test.ps1
 
 # 2. 10-Thread Concurrency Stress Test (zero overselling)
 powershell -ExecutionPolicy Bypass -File scratch/concurrency_test.ps1
-
-# 3. Admin Security & Role-Gating Test
-powershell -ExecutionPolicy Bypass -File scratch/admin_test.ps1
 ```
 
 ---

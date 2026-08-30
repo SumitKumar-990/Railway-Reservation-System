@@ -34,7 +34,7 @@ public class RailRadarService {
     private final SeatClassRepository seatClassRepository;
 
     public RailRadarService(
-            @Value("${app.railradar.api-key:rg_1b3cfb97ce074697be75e92156bb6445}") String apiKey,
+            @Value("${app.railradar.api-key:}") String apiKey,
             @Value("${app.railradar.base-url:https://api.railradar.in/v1}") String baseUrl,
             TrackingService trackingService,
             TrainRepository trainRepository,
@@ -53,6 +53,9 @@ public class RailRadarService {
     }
 
     public RailRadarLiveStatusResponse getLiveStatus(String trainNumber) {
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            return buildFallbackLiveStatus(trainNumber);
+        }
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(baseUrl + "/trains/" + trainNumber + "/live"))
